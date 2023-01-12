@@ -16,6 +16,7 @@ def get_requirements()->List[str]:
 setup(
     name = "shipment pricing",
     version = "0.0.1",
+    description='This is a Shipment Pricing Prediction Project',
     author = "Navdeep Singh",
     author_email = "navdeep3135@gmail.com",
     packages = find_packages(), 
