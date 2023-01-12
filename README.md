@@ -1,3 +1,3 @@
 # Shipment-Pricing-Prediction
 
-![alt text](https://static.javatpoint.com/tutorial/machine-learning/images/machine-learning-pipeline3.png)
+![alt text](https://www.oreilly.com/api/v2/epubs/9781492053187/files/assets/bmlp_0101.png)
