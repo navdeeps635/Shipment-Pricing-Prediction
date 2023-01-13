@@ -4,6 +4,8 @@ from shipment.exception import ShipmentException
 import pandas as pd
 import os,sys
 import numpy as np
+import dill
+import yaml
 
 def get_collection_as_dataframe(database_name:str,collection_name:str)-> pd.DataFrame:
     '''
@@ -37,4 +39,14 @@ def get_collection_as_dataframe(database_name:str,collection_name:str)-> pd.Data
     except Exception as e:
         raise ShipmentException(e,sys) 
 
+def write_yaml_file(file_path,data:dict):
+    try:
+        file_dir = os.path.dirname(file_path)
 
+        os.makedirs(file_dir)
+
+        with open(file_path,'w') as file_writer:
+            yaml.dump(data,file_writer)
+
+    except Exception as e:
+        raise ShipmentException(e,sys)

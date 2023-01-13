@@ -18,6 +18,6 @@ def error_message_details(error,error_details:sys):
 
     file_name = exc_tb.tb_frame.f_code.co_filename
 
-    error_message = f"Error occured python script name [{file_name} linenumer [{exc_tb.tb_lineno}] error_message [{str(error)}]"
+    error_message = f"Error occured python script name [{file_name} line no. [{exc_tb.tb_lineno}] error_message [{str(error)}]"
 
     return error_message
