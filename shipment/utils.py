@@ -39,14 +39,82 @@ def get_collection_as_dataframe(database_name:str,collection_name:str)-> pd.Data
     except Exception as e:
         raise ShipmentException(e,sys) 
 
-def write_yaml_file(file_path,data:dict):
+def write_yaml_file(file_path:str,data:dict):
     try:
-        file_dir = os.path.dirname(file_path)
+        dir_path = os.path.dirname(file_path)
+        os.makedirs(dir_path,exist_ok = True)
 
-        os.makedirs(file_dir)
+        with open(file_path,'w') as yaml_file:
+            if data is not None:
+                yaml.dump(data,yaml_file)
 
-        with open(file_path,'w') as file_writer:
-            yaml.dump(data,file_writer)
+    except Exception as e:
+        raise ShipmentException(e,sys)
 
+def read_yaml_file(file_path:str)->dict:
+    """
+    Reads a YAML file and returns the contents as a dictionary.
+    file_path: str
+    """
+    try:
+        with open(file_path,'rb') as yaml_file:
+            return yaml.safe_load(yaml_file)
+
+    except Exception as e:
+        raise ShipmentException(e,sys)
+
+def save_numpy_array_data(file_path:str, array:np.ndarray):
+    """
+    Save numpy array data to file
+    file_path: str location of file to save
+    array: np.array data to save
+    """
+    try:
+        dir_path = os.path.dirname(file_path)
+        os.makedirs(dir_path,exist_ok = True)
+
+        with open(file_path,'wb') as file_object:
+            np.save(file_object,array)
+    
+    except Exception as e:
+        raise ShipmentException(e,sys)
+
+def load_numpy_array_data(file_path:str)->np.ndarray:
+    """
+    load numpy array data file
+    file_path: str path where file is located.
+    array: np.array data loaded
+    """
+    try:
+        dir_path = os.path.dirname(file_path)
+        os.makedirs(dir_path,exist_ok = True)
+
+        with open(file_path,'rb') as file_object:
+            return np.load(file_object)
+    
+    except Exception as e:
+        raise ShipmentException(e,sys)
+
+def save_object(file_path:str,object):
+    """
+    file_path: str
+    obj: Any sort of object
+    """
+    try:
+        dir_path = os.path.dirname(file_path)
+        os.makedirs(dir_path, exist_ok=True)
+        with open(file_path, "wb") as file_obj:
+            dill.dump(object, file_obj)
+
+    except Exception as e:
+        raise ShipmentException(e,sys)
+
+def load_object(file_path:str):
+    """
+    file_path: str
+    """
+    try:
+        with open(file_path, "rb") as file_obj:
+            return dill.load(file_obj)
     except Exception as e:
         raise ShipmentException(e,sys)
