@@ -138,21 +138,20 @@ class DataValidation:
             os.makedirs(train_report_dir,exist_ok=True)
 
             with open(train_report_file_path,"w") as train_report_file:
-                json.dump(train_report, train_report_file, indent=6)
+                json.dump(train_report, train_report_file, indent=1)
             
             test_report_file_path = self.data_validation_config.test_report_file_path
             test_report_dir = os.path.dirname(test_report_file_path)
             os.makedirs(test_report_dir,exist_ok=True)
 
             with open(test_report_file_path,"w") as test_report_file:
-                json.dump(test_report, test_report_file, indent=6)
+                json.dump(test_report, test_report_file, indent=1)
 
         except Exception as e:
             raise ShipmentException(e,sys)
 
     def save_data_drift_report_page(self):
         try:
-            
             base_df = pd.read_csv(self.data_validation_config.base_file_path)
 
             train_df,test_df = self.get_train_and_test_df()

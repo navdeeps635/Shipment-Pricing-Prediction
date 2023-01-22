@@ -24,7 +24,7 @@ class ModelTrainer:
     
     def train_model(self,X,y):
         try:
-            xgb_reg = XGBRegressor()
+            xgb_reg = XGBRegressor(random_state=0)
             xgb_reg.fit(X,y)
             return xgb_reg
 

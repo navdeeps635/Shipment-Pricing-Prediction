@@ -80,7 +80,7 @@ class ModelEvaluation:
             input_arr = input_transformer.transform(imputed_input_df[input_feature_name])
             y_pred  = model.predict(input_arr)
 
-            previous_model_score = r2_score(y_true = y_true, y_pred = y_pred)
+            previous_model_score = round(r2_score(y_true = y_true, y_pred = y_pred),4)
             logging.info(f"Score using previous model:{previous_model_score}")
 
             #r2_score using current trained model
@@ -92,7 +92,7 @@ class ModelEvaluation:
             input_arr = input_transformer.transform(imputed_input_df[input_feature_name])
             current_y_pred  = current_model.predict(input_arr)
 
-            current_model_score = r2_score(y_true = y_true, y_pred = current_y_pred)
+            current_model_score = round(r2_score(y_true = y_true, y_pred = current_y_pred),4)
             logging.info(f"Score using current model:{current_model_score}")
 
             if current_model_score<=previous_model_score:
