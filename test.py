@@ -77,7 +77,7 @@ class DataValidation:
             current_columns = current_df.columns
 
             for base_column in base_columns:
-                base_data, current_data = base_df[base_column],current_df[base_column]
+                base_data, current_data = base_df[base_column], current_df[base_column]
 
                 response = ks_2samp(data1 = base_data, data2 = current_data)
 
@@ -144,5 +144,71 @@ class DataValidation:
 
             return data_validation_artifact
         
+        except Exception as e:
+            raise ShipmentException(e,sys)
+
+
+
+
+
+
+def get_train_and_test_df(self):
+        try:
+            train_df = pd.read_csv(self.data_ingestion_artifact.train_file_path)
+            test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
+
+            return train_df,test_df
+
+        except Exception as e:
+            raise ShipmentException(e,sys)
+
+    def is_train_test_file_exists(self)->bool:
+        try:
+            logging.info("Checking if training and test file is available")
+            is_train_file_exist = False
+            is_test_file_exist = False
+
+            train_file_path = self.data_ingestion_artifact.train_file_path
+            test_file_path = self.data_ingestion_artifact.test_file_path
+
+            is_train_file_exist = os.path.exists(train_file_path)
+            is_test_file_exist = os.path.exists(test_file_path)
+
+            is_available = is_train_file_exist and is_test_file_exist
+
+            logging.info(f"Is train and test file exists?-> {is_available}")
+
+            if not is_available:
+                training_file = self.data_ingstion_artifact.train_file_path
+                test_file = self.data_ingestion_artifact.test_file_path
+                message=f"Training file: {training_file} or Testing file: {testing_file} is not present"
+                raise Exception(message)
+
+            return is_available
+        
+        except Exception as e:
+            raise ShipmentException(e,sys)
+    
+    #function to drop unwanted columns
+    def drop_unwanted_columns(self,df)->pd.DataFrame:
+        try:
+            #drop unnecessary columns as they are not required for model training
+            columns_to_drop =  ['ID', 'Project Code', 'PQ #', 'PO / SO #', 'ASN/DN #','Item Description','PQ First Sent to Client Date',
+            'PO Sent to Vendor Date','Scheduled Delivery Date','Delivered to Client Date','Delivery Recorded Date']
+
+            df = df.drop(columns=columns_to_drop)
+            
+            return df
+
+        except Exception as e:
+                raise ShipmentException(e,sys)
+                
+    def validate_dataset_schema(self)->bool:
+        try:
+            #validation_status = False
+            pass
+
+            #assigment validate training and testing dataset using schema file
+
         except Exception as e:
             raise ShipmentException(e,sys)

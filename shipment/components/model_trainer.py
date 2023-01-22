@@ -5,19 +5,28 @@ import os,sys
 import pandas as pd
 import numpy as np
 from shipment import utils
+from xgboost import XGBRegressor
+from sklearn.metrics import r2_score
 
 class ModelTrainer:
 
     def __init__(self,
     model_trainer_config:config_entity.ModelTrainerConfig,
-    data_transformation_artifact:artifact_entity.DataTransformationArtifact,
-    best_model:model_finder.SelectBestModel):
+    data_transformation_artifact:artifact_entity.DataTransformationArtifact):
         
         try:
             logging.info(f"{'>>'*20} Model Trainer Initiated {'<<'*20}")
             self.model_trainer_config = model_trainer_config
             self.data_transformation_artifact = data_transformation_artifact
-            self.best_model = best_model
+
+        except Exception as e:
+            raise ShipmentException(e, sys)
+    
+    def train_model(self,X,y):
+        try:
+            xgb_reg = XGBRegressor()
+            xgb_reg.fit(X,y)
+            return xgb_reg
 
         except Exception as e:
             raise ShipmentException(e, sys)
@@ -32,14 +41,18 @@ class ModelTrainer:
             X_train, y_train = train_arr[:,:-1], train_arr[:,-1]
             X_test, y_test = test_arr[:,:-1], test_arr[:,-1]
 
-            logging.info(f"Best trained model and corresponding training_r2_score")
-            #get best model and corresponding r2 score for training data
-            model,train_r2_score, test_r2_score = self.best_model.get_best_model(
-                X_train = X_train, y_train = y_train, X_test = X_test, y_test = y_test
-            )
+            logging.info(f"train the model")
+            model = self.train_model(X = X_train,y = y_train)
 
-            logging.info(f"Best model: {train_model}, training_r2_score: {train_r2_score} and test_r2_score: {test_r2_score}")
+            logging.info(f"calculate train r2 score") 
+            yhat_train = model.predict(X_train)
+            train_r2_score = r2_score(y_true = y_train, y_pred = yhat_train)
 
+            logging.info(f"calculate test r2 score") 
+            yhat_test = model.predict(X_test)
+            test_r2_score = r2_score(y_true = y_test, y_pred = yhat_test)
+
+            logging.info(f"train score: {train_r2_score} and test score: {test_r2_score}")
             #check for expected score
             logging.info(f"check if model is underfitted or not")
             if test_r2_score < self.model_trainer_config.expected_score:
@@ -54,7 +67,7 @@ class ModelTrainer:
 
             #save the training model
             logging.info(f"save model object")
-            utils.save_object(file_path = self.model_trainer_config.model_path, object = train_model)
+            utils.save_object(file_path = self.model_trainer_config.model_path, object = model)
 
             #prepare artifact
             logging.info(f"prepare the artifact")
@@ -63,6 +76,7 @@ class ModelTrainer:
                 train_r2_score = train_r2_score,
                 test_r2_score = test_r2_score
             )
+            
             logging.info(f"{'>>'*20} Model Trainer Completed {'<<'*20}")
 
             return model_trainer_artifact

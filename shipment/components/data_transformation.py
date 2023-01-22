@@ -113,7 +113,6 @@ class DataTransformation:
             target_feature_train_df = self.create_target_feature(df = input_feature_train_df)
             target_feature_test_df = self.create_target_feature(df = input_feature_test_df)
 
-
             print(input_feature_train_df)
 
             #creat an instance of input data transformer
@@ -142,7 +141,7 @@ class DataTransformation:
             train_arr = np.c_[input_feature_train_arr,target_feature_train_arr]
             test_arr =  np.c_[input_feature_test_arr,target_feature_test_arr]
             
-            #print(test_arr)
+            
 
             logging.info(f"Saving transforming train and test array")
             #save numpy array
@@ -151,12 +150,14 @@ class DataTransformation:
 
             logging.info(f"Saving input and target transformer pkl file")
             #save transofrmed data into pkl file
+            utils.save_object(file_path = self.data_transformation_config.numerical_imputer_object_path, object = numerical_imputer)
             utils.save_object(file_path = self.data_transformation_config.input_transformer_object_path, object = preprocessing_input_object)
             utils.save_object(file_path = self.data_transformation_config.target_transformer_object_path, object = preprocessing_target_object)
 
             data_transformation_artifact = artifact_entity.DataTransformationArtifact(
                 tranformed_train_path = self.data_transformation_config.tranformed_train_path,
                 tranformed_test_path = self.data_transformation_config.tranformed_test_path,
+                numerical_imputer_object_path = self.data_transformation_config.numerical_imputer_object_path,
                 input_transformer_object_path = self.data_transformation_config.input_transformer_object_path,
                 target_transformer_object_path = self.data_transformation_config.target_transformer_object_path
             )

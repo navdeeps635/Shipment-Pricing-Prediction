@@ -46,7 +46,7 @@ def write_yaml_file(file_path:str,data:dict):
 
         with open(file_path,'w') as yaml_file:
             if data is not None:
-                yaml.dump(data,yaml_file)
+                yaml.dump(data,yaml_file,sort_keys=False, default_flow_style=False)
 
     except Exception as e:
         raise ShipmentException(e,sys)

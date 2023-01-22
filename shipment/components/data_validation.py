@@ -4,16 +4,23 @@ from shipment.entity import config_entity,artifact_entity
 import os,sys
 import pandas as pd
 from evidently.model_profile import Profile
+from evidently.metric_preset import DataDriftPreset
 from evidently.model_profile.sections import DataDriftProfileSection
 from evidently.dashboard import Dashboard
 from evidently.dashboard.tabs import DataDriftTab
+from evidently import ColumnMapping
+from evidently.model_profile import Profile
 import json
+import yaml
+
+import warnings
+warnings.filterwarnings("ignore")
 
 class DataValidation:
 
     def __init__(self,
     data_ingestion_artifact:artifact_entity.DataIngestionArtifact,
-    data_validation_artifact:artifact_entity.DataValidationArtifact
+    data_validation_config:config_entity.DataValidationConfig
     ):
         try:
             logging.info(f"{'>>'*20} Data Validation Initiated {'<<'*20}")
@@ -33,7 +40,7 @@ class DataValidation:
         except Exception as e:
             raise ShipmentException(e,sys)
 
-    def is_train_test_file_exists(self)->bool:
+    def is_train_test_file_exists(self):
         try:
             logging.info("Checking if training and test file is available")
             is_train_file_exist = False
@@ -60,12 +67,117 @@ class DataValidation:
         except Exception as e:
             raise ShipmentException(e,sys)
     
-    def validate_dataset_schema(self)->bool:
+    #function to drop unwanted columns
+    def drop_unwanted_columns(self,df:pd.DataFrame)->pd.DataFrame:
         try:
-            validation_status = False
-            
-            #assigment validate training and testing dataset using schema file
+            #drop unnecessary columns as they are not required for model training
+            columns_to_drop:list =  ['ID', 'Project Code', 'PQ #', 'PO / SO #', 'ASN/DN #','Item Description','PQ First Sent to Client Date',
+            'PO Sent to Vendor Date','Scheduled Delivery Date','Delivered to Client Date','Delivery Recorded Date']
 
+            df = df.drop(columns_to_drop,axis =1)
             
+            return df
 
+        except Exception as e:
+                raise ShipmentException(e,sys)
+              
+    # def is_required_column_exist(self,base_df,current_df,report_key_name:str)-> bool:
+    #     try:
+    #         base_columns = base_df.columns
+    #         current_columns = current_df.columns
+
+    #         missing_columns = []
+
+    #         for base_column in base_columns:
+    #             if base_column not in current_columns:
+    #                 missing_columns.append(base_column)
+
+    #         if len(missing_columns)>0:
+    #             self.validation_error[report_key_name] = missing_columns
+    #             return False
+
+    #         return True
+        
+        except Exception as e:
+            raise ShipmentException(e,sys)
+
+    def get_and_save_data_drift_report(self):
+        try:
+            base_df = pd.read_csv(self.data_validation_config.base_file_path)
+            train_df,test_df = self.get_train_and_test_df()
+
+            base_df = self.drop_unwanted_columns(df = base_df)
+            train_df = self.drop_unwanted_columns(df = train_df)
+            test_df = self.drop_unwanted_columns(df = test_df)
+
+            train_profile = Profile(sections=[DataDriftProfileSection()])
+            train_profile.calculate(base_df, train_df)
+            train_report = json.loads(train_profile.json())
+
+            test_profile = Profile(sections=[DataDriftProfileSection()])
+            test_profile.calculate(base_df, test_df)
+            test_report = json.loads(test_profile.json())
+
+            train_report_file_path = self.data_validation_config.train_report_file_path
+            train_report_dir = os.path.dirname(train_report_file_path)
+            os.makedirs(train_report_dir,exist_ok=True)
+
+            with open(train_report_file_path,"w") as train_report_file:
+                json.dump(train_report, train_report_file, indent=6)
             
+            test_report_file_path = self.data_validation_config.test_report_file_path
+            test_report_dir = os.path.dirname(test_report_file_path)
+            os.makedirs(test_report_dir,exist_ok=True)
+
+            with open(test_report_file_path,"w") as test_report_file:
+                json.dump(test_report, test_report_file, indent=6)
+
+        except Exception as e:
+            raise ShipmentException(e,sys)
+
+    def save_data_drift_report_page(self):
+        try:
+            base_df = pd.read_csv(self.data_validation_config.base_file_path)
+            train_df,test_df = self.get_train_and_test_df()
+
+            base_df = self.drop_unwanted_columns(df = base_df)
+            train_df = self.drop_unwanted_columns(df = train_df)
+            test_df = self.drop_unwanted_columns(df = test_df)
+
+            train_dashboard = Dashboard(tabs=[DataDriftTab()])
+            train_dashboard.calculate(base_df, train_df)
+
+            train_report_page_file_path = self.data_validation_config.train_report_page_file_path
+            train_report_page_dir = os.path.dirname(train_report_page_file_path)
+            os.makedirs(train_report_page_dir,exist_ok=True)
+
+            train_dashboard.save(train_report_page_file_path)
+
+            test_dashboard = Dashboard(tabs=[DataDriftTab()])
+            test_dashboard.calculate(base_df, train_df)
+
+            test_report_page_file_path = self.data_validation_config.test_report_page_file_path
+            test_report_page_dir = os.path.dirname(test_report_page_file_path)
+            os.makedirs(test_report_page_dir,exist_ok=True)
+
+            test_dashboard.save(test_report_page_file_path)
+
+        except Exception as e:
+            raise ShipmentException(e,sys)
+
+    def initiate_data_validation(self):
+        try:
+            self.is_train_test_file_exists()
+            self.get_and_save_data_drift_report()
+            self.save_data_drift_report_page()
+
+            data_validation_artifact = artifact_entity.DataValidationArtifact(
+                train_report_file_path=self.data_validation_config.train_report_file_path,
+                test_report_file_path=self.data_validation_config.test_report_file_path,
+                train_report_page_file_path=self.data_validation_config.train_report_page_file_path,
+                test_report_page_file_path=self.data_validation_config.test_report_page_file_path,
+            )
+            logging.info(f"Data validation artifact: {data_validation_artifact}")
+            return data_validation_artifact
+        except Exception as e:
+            raise ShipmentException(e,sys)

@@ -42,7 +42,9 @@ class SelectBestModel:
             #creating a new model with the best parameters
             self.knn = KNeighborsRegressor(n_neighbors = self.n_neighbors)
 
-            return self.knn.fit(X,y)
+            self.knn.fit(X,y)
+
+            return self.knn 
 
         except Exception as e:
             raise ShipmentException(e,sys)
@@ -69,8 +71,10 @@ class SelectBestModel:
 
             #creating a new model with the best parameters
             self.decision_tree = DecisionTreeRegressor(criterion = self.criterion, splitter = self.splitter, ccp_alpha = self.ccp_alpha)
+            
+            self.decision_tree.fit(X,y)
 
-            return self.decision_tree.fit(X,y)
+            return self.decision_tree 
 
         except Exception as e:
             raise ShipmentException(e,sys)
@@ -98,7 +102,9 @@ class SelectBestModel:
             #creating a new model with the best parameters
             self.random_forest = RandomForestRegressor(n_estimators = self.n_estimators, criterion = self.criterion, ccp_alpha = self.ccp_alpha)
 
-            return self.random_forest.fit(X,y)
+            self.random_forest.fit(X,y)
+
+            return self.random_forest
 
         except Exception as e:
             raise ShipmentException(e,sys)
@@ -124,7 +130,9 @@ class SelectBestModel:
             #creating a new model with the best parameters
             self.ada_boost = AdaBoostRegressor(n_estimators = self.n_estimators, learning_rate = self.learning_rate)
 
-            return self.ada_boost.fit(X,y)
+            self.ada_boost.fit(X,y)
+
+            return self.ada_boost
 
         except Exception as e:
             raise ShipmentException(e,sys)
@@ -152,7 +160,9 @@ class SelectBestModel:
             #creating a new model with the best parameters
             self.xgboost = XGBRegressor(n_estimators = self.n_estimators, learning_rate = self.learning_rate, gamma = self.gamma)
 
-            return self.xgboost.fit(X,y)
+            self.xgboost.fit(X,y)
+            
+            return self.xgboost
 
         except Exception as e:
             raise ShipmentException(e,sys)

@@ -7,15 +7,17 @@ class ModelResolver:
 
     def __init__(self,
     model_registry:str = "saved_models",
+    numerical_imputer_dir_name:str = "numerical_imputer", 
     input_transformer_dir_name:str = "input_transformer",
     target_transformer_dir_name:str = "target_transformer",
     model_dir_name:str = "model"
     ):
 
-        self.model_registry = model_registry,
+        self.model_registry = model_registry
         os.makedirs(self.model_registry,exist_ok = True)
-        self.input_transformer_dir_name = input_transformer_dir_name,
-        self.target_transformer_dir_name = target_transformer_dir_name,
+        self.numerical_imputer_dir_name = numerical_imputer_dir_name
+        self.input_transformer_dir_name = input_transformer_dir_name
+        self.target_transformer_dir_name = target_transformer_dir_name
         self.model_dir_name = model_dir_name
     
     def get_latest_dir_path(self,)->Optional[str]:
@@ -23,7 +25,7 @@ class ModelResolver:
         This function will give path of earlier saved model
         '''
         try:
-            dir_names = od.listdir(self.model_registry)
+            dir_names = os.listdir(self.model_registry)
             if len(dir_names) == 0:
                 return None
             
@@ -44,6 +46,19 @@ class ModelResolver:
 
             model_file_path = os.path.join(latest_dir,self.model_dir_name,config_entity.model_file_name)
             return model_file_path
+
+        except Exception as e:
+            raise ShipmentException(e,sys)
+    
+    def get_latest_numerical_imputer_path(self,):
+        try:
+            latest_dir = self.get_latest_dir_path()
+
+            if latest_dir is None:
+                return Exception(f"Numerical Imputer is not available")
+
+            numerical_imputer_file_path = os.path.join(latest_dir,self.numerical_imputer_dir_name,config_entity.numerial_imputer_object_file_name)
+            return numerical_imputer_file_path
 
         except Exception as e:
             raise ShipmentException(e,sys)
@@ -82,7 +97,7 @@ class ModelResolver:
             latest_dir = self.get_latest_dir_path()
             
             if latest_dir == None:
-                return os.path.join(slef.model_registry,f"{0}")
+                return os.path.join(self.model_registry,f"{0}")
 
             latest_dir_name = int(os.path.basename(self.get_latest_dir_path()))
 
@@ -98,7 +113,15 @@ class ModelResolver:
             return os.path.join(latest_dir, self.model_dir_name,config_entity.model_file_name)
 
         except Exception as e:
-            raise SensorException(e, sys)
+            raise ShipmentException(e, sys)
+
+    def get_latest_save_numerical_imputer_path(self):
+        try:
+            latest_dir = self.get_latest_save_dir_path()
+            return os.path.join(latest_dir, self.numerical_imputer_dir_name,config_entity.numerial_imputer_object_file_name)
+
+        except Exception as e:
+            raise ShipmentException(e, sys)
     
     def get_latest_save_input_transfomer_path(self):
         try:
@@ -106,7 +129,7 @@ class ModelResolver:
             return os.path.join(latest_dir, self.input_transformer_dir_name,config_entity.input_transformer_object_file_name)
 
         except Exception as e:
-            raise SensorException(e, sys)
+            raise ShipmentException(e, sys)
     
     def get_latest_save_target_transfomer_path(self):
         try:
@@ -114,4 +137,4 @@ class ModelResolver:
             return os.path.join(latest_dir, self.target_transformer_dir_name,config_entity.target_transformer_object_file_name)
 
         except Exception as e:
-            raise SensorException(e, sys)
+            raise ShipmentException(e, sys)

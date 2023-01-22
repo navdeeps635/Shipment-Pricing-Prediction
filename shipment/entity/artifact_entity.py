@@ -8,12 +8,16 @@ class DataIngestionArtifact:
 
 @dataclass
 class DataValidationArtifact:
-    report_file_path:str
+    train_report_file_path:str
+    test_report_file_path:str
+    train_report_page_file_path:str
+    test_report_page_file_path:str
 
 @dataclass
 class DataTransformationArtifact:
     tranformed_train_path:str
     tranformed_test_path:str
+    numerical_imputer_object_path:str
     input_transformer_object_path:str
     target_transformer_object_path:str
 
@@ -29,4 +33,6 @@ class ModelEvaluationArtifact:
     improved_score:float
     
 @dataclass
-class ModelPusherArtifact:...
+class ModelPusherArtifact:
+    pusher_model_dir:str
+    outside_saved_model_dir:str

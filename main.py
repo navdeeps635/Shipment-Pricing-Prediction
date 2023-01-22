@@ -2,9 +2,11 @@ from shipment.exception import ShipmentException
 from shipment.logger import logging
 from shipment.entity import config_entity,artifact_entity,model_finder
 from shipment.components.data_ingestion import DataIngestion
-#from shipment.components.data_validation import DataValidation
+from shipment.components.data_validation import DataValidation
 from shipment.components.data_transformation import DataTransformation
 from shipment.components.model_trainer import ModelTrainer
+from shipment.components.model_evaluation import ModelEvaluation
+from shipment.components.model_pusher import ModelPusher
 
 import os,sys
 
@@ -17,12 +19,12 @@ if __name__ == '__main__':
         data_ingestion = DataIngestion(data_ingestion_config = data_ingestion_config)
         data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
 
-        # #data validation
-        # data_validation_config = config_entity.DataValidationConfig(training_pipeline_config)
-        # data_validation = DataValidation(
-        #     data_validation_config = data_validation_config,
-        #     data_ingstion_artifact = data_ingstion_artifact)
-        # data_validation_artifact = data_validation.initiate_data_validation()
+        #data validation
+        data_validation_config = config_entity.DataValidationConfig(training_pipeline_config)
+        data_validation = DataValidation(
+            data_validation_config = data_validation_config,
+            data_ingestion_artifact = data_ingestion_artifact)
+        data_validation_artifact = data_validation.initiate_data_validation()
 
         data_transformation_config = config_entity.DataTransformationConfig(training_pipeline_config)
         data_transformation = DataTransformation(
@@ -34,10 +36,30 @@ if __name__ == '__main__':
         model_trainer_config = config_entity.ModelTrainerConfig(training_pipeline_config)
         model_trainer = ModelTrainer(
             model_trainer_config = model_trainer_config,
-            data_transformation_artifact = data_transformation_artifact,
-            best_model = model_finder.SelectBestModel()
+            data_transformation_artifact = data_transformation_artifact
         )
 
         model_trainer_artifact = model_trainer.initiate_model_trainer()
+
+        model_eval_config = config_entity.ModelEvaluationConfig(training_pipeline_config)
+        model_eval = ModelEvaluation(
+            data_ingestion_artifact = data_ingestion_artifact,
+            data_transformation_artifact = data_transformation_artifact,
+            model_trainer_artifact = model_trainer_artifact,
+            model_eval_config = model_eval_config
+        )
+
+        model_evaluation_artifact = model_eval.initiate_model_evaluation()
+
+        #model pusher
+        model_pusher_config = config_entity.ModelPusherConfig(training_pipeline_config = training_pipeline_config)
+        model_pusher = ModelPusher(
+            model_pusher_config = model_pusher_config,
+            data_transformation_artifact = data_transformation_artifact,
+            model_trainer_artifact = model_trainer_artifact
+        )    
+
+        model_pusher_artifact = model_pusher.initiate_model_pusher()
+
     except Exception as e:
         raise ShipmentException(e,sys)
