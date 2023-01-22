@@ -46,8 +46,8 @@ class DataValidationConfig:
         
         try:
             self.data_validation_dir = os.path.join(training_pipeline_config.artifact_dir,"data_validation")
-            self.train_report_file_path = os.path.join(self.data_validation_dir,"Data Drift Reports","train_data_drift_report.yaml")
-            self.test_report_file_path = os.path.join(self.data_validation_dir,"Data Drift Reports","test_data_drift_report.yaml")
+            self.train_report_file_path = os.path.join(self.data_validation_dir,"Data Drift Reports","train_data_drift_report.json")
+            self.test_report_file_path = os.path.join(self.data_validation_dir,"Data Drift Reports","test_data_drift_report.json")
             self.train_report_page_file_path = os.path.join(self.data_validation_dir,"Data Drift Dashboards","train_dashboard.html")
             self.test_report_page_file_path = os.path.join(self.data_validation_dir,"Data Drift Dashboards","test_dashboard.html")
             self.missing_threshold = 0.7

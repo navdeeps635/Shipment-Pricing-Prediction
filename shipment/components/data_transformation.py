@@ -24,7 +24,6 @@ class DataTransformation:
     data_ingestion_artifact:artifact_entity.DataIngestionArtifact):
 
         try:
-            logging.info(f"{'>>'*20} Data Transformation Initiated {'<<'*20}")
             self.data_transformation_config = data_transformation_config
             self.data_ingestion_artifact = data_ingestion_artifact
 
@@ -75,45 +74,38 @@ class DataTransformation:
 
     def initiate_data_transformation(self)->artifact_entity.DataTransformationArtifact:
         try:
+            logging.info(f"{'>>'*10} Data Transformation {'<<'*10}")
             logging.info(f"reading train and test dataset")
             #read train and test data
             train_df = pd.read_csv(self.data_ingestion_artifact.train_file_path)
             test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
 
+            logging.info(f"dropping unnecessary columns from train and test dataset")
             #drop unwanted columns from train and test data
             train_df = self.drop_unwanted_columns(df = train_df)
             test_df = self.drop_unwanted_columns(df = test_df)
             
+            logging.info(f"cleaning text data from train and test dataset")
             #clean the columns such as remove text and fill it with NaN value
             train_df = self.clean_columns_data(df = train_df)
             test_df = self.clean_columns_data(df = test_df)
-            
-            print(train_df)
 
-            logging.info(f"splitting input features in  train and test dataset")
-            
+            logging.info(f"splitting input features in  train and test dataset")            
             #get numerical and categorical features from train data
             numerical_columns = train_df.select_dtypes(include = ['int64','float64']).columns
             categorical_columns = train_df.select_dtypes(include = 'object').columns
 
-            print(numerical_columns)
-            print(categorical_columns)
-
             numerical_imputer = NumericalImputationMICE(columns = numerical_columns)
 
+            logging.info(f"imputing numerical features")
             #input features in train and test data
             input_feature_train_df = numerical_imputer.fit_transform(train_df)
             input_feature_test_df = numerical_imputer.transform(test_df)
 
-            print(input_feature_train_df.isnull().sum())
-
-            #print(input_feature_train_df[['Line Item Value','Freight Cost (USD)','Line Item Insurance (USD)']])
             logging.info(f"splitting target features in  train and test dataset")
             #target feature in train and test data 
             target_feature_train_df = self.create_target_feature(df = input_feature_train_df)
             target_feature_test_df = self.create_target_feature(df = input_feature_test_df)
-
-            print(input_feature_train_df)
 
             #creat an instance of input data transformer
             preprocessing_input_object = self.get_input_transformer_object(
@@ -121,7 +113,7 @@ class DataTransformation:
                 categorical_columns = categorical_columns
             )
 
-            logging.info(f"Transforming input features in  train and test dataset")
+            logging.info(f"Transforming input features in train and test dataset")
             #transformed train and test input feuatres array
             input_feature_train_arr = preprocessing_input_object.fit_transform(input_feature_train_df)
             input_feature_test_arr = preprocessing_input_object.transform(input_feature_test_df)  
@@ -130,7 +122,7 @@ class DataTransformation:
             #creat an instance of target data transformer
             preprocessing_target_object = self.get_target_transformer_object()
 
-            logging.info(f"Transforming target features in  train and test dataset")
+            logging.info(f"Transforming target features in train and test dataset")
             #transformed train and test input feuatres array
             target_feature_train_arr = preprocessing_target_object.fit_transform(target_feature_train_df.values.reshape(-1,1))
             target_feature_test_arr = preprocessing_target_object.transform(target_feature_test_df.values.reshape(-1,1))
@@ -141,8 +133,6 @@ class DataTransformation:
             train_arr = np.c_[input_feature_train_arr,target_feature_train_arr]
             test_arr =  np.c_[input_feature_test_arr,target_feature_test_arr]
             
-            
-
             logging.info(f"Saving transforming train and test array")
             #save numpy array
             utils.save_numpy_array_data(file_path = self.data_transformation_config.tranformed_train_path, array = train_arr)
@@ -163,7 +153,6 @@ class DataTransformation:
             )
             
             logging.info(f"Data transformationa artifact: {data_transformation_artifact}")
-            logging.info(f"{'>>'*20} Data Transformation Completed {'<<'*20}")
 
             return data_transformation_artifact
 

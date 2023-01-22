@@ -13,7 +13,7 @@ class ModelPusher:
     model_trainer_artifact:artifact_entity.ModelTrainerArtifact):
 
         try:
-            logging.info(f"{'>>'*20} Model Pusher {'<<'*20}")
+            logging.info(f"{'>>'*10} Model Pusher {'<<'*10}")
             self.model_pusher_config = model_pusher_config
             self.data_transformation_artifact = data_transformation_artifact
             self.model_trainer_artifact = model_trainer_artifact
@@ -24,13 +24,15 @@ class ModelPusher:
     
     def initiate_model_pusher(self,)->artifact_entity.ModelPusherArtifact:
         try:
-            #load object
+            #load 
+            logging.info(f"loading numerical imputer, input transformer, target transformer and model")
             numerical_imputer_object = utils.load_object(file_path = self.data_transformation_artifact.numerical_imputer_object_path)
             input_transformer_object = utils.load_object(file_path = self.data_transformation_artifact.input_transformer_object_path)
             target_transformer_object = utils.load_object(file_path = self.data_transformation_artifact.target_transformer_object_path)
             model = utils.load_object(file_path = self.model_trainer_artifact.model_path)
 
             #model pusher dir
+            logging.info(f"Saving model into model pusher directory")
             utils.save_object(file_path = self.model_pusher_config.pusher_numerical_imputer_path,object = numerical_imputer_object)
             utils.save_object(file_path = self.model_pusher_config.pusher_input_transformer_path, object = input_transformer_object)
             utils.save_object(file_path = self.model_pusher_config.pusher_target_transformer_path, object = target_transformer_object)
@@ -53,6 +55,7 @@ class ModelPusher:
                 outside_saved_model_dir = self.model_pusher_config.outside_saved_model_dir
             )
 
+            logging.info(f"Model pusher artifact: {model_pusher_artifact}")
             return model_pusher_artifact
 
         except Exception as e:

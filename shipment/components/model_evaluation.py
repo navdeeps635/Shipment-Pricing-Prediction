@@ -18,7 +18,7 @@ class ModelEvaluation:
     ):
 
         try:
-            logging.info(f"{'>>'*20} Model Evaluation {'<<'*20}")
+            logging.info(f"{'>>'*10} Model Evaluation {'<<'*10}")
             self.data_ingestion_artifact = data_ingestion_artifact
             self.data_transformation_artifact = data_transformation_artifact
             self.model_trainer_artifact = model_trainer_artifact
@@ -79,8 +79,7 @@ class ModelEvaluation:
             input_feature_name = list(input_transformer.feature_names_in_)
             input_arr = input_transformer.transform(imputed_input_df[input_feature_name])
             y_pred  = model.predict(input_arr)
-            logging.info(y_pred.shape)
-            logging.info(f"Prediction using previous model:{target_transformer.inverse_transform(y_pred[:5].reshape(-1,1))}")
+
             previous_model_score = r2_score(y_true = y_true, y_pred = y_pred)
             logging.info(f"Score using previous model:{previous_model_score}")
 
@@ -92,7 +91,7 @@ class ModelEvaluation:
             input_feature_name = list(current_input_transformer.feature_names_in_)
             input_arr = input_transformer.transform(imputed_input_df[input_feature_name])
             current_y_pred  = current_model.predict(input_arr)
-            logging.info(f"Prediction using Current model:{current_target_transformer.inverse_transform(y_pred[:5].reshape(-1,1))}")
+
             current_model_score = r2_score(y_true = y_true, y_pred = current_y_pred)
             logging.info(f"Score using current model:{current_model_score}")
 

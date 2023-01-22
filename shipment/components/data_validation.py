@@ -23,7 +23,7 @@ class DataValidation:
     data_validation_config:config_entity.DataValidationConfig
     ):
         try:
-            logging.info(f"{'>>'*20} Data Validation Initiated {'<<'*20}")
+            logging.info(f"{'>>'*10} Data Validation {'<<'*10}")
             self.data_ingestion_artifact = data_ingestion_artifact
             self.data_validation_config = data_validation_config
             
@@ -61,7 +61,7 @@ class DataValidation:
                 test_file = self.data_ingestion_artifact.test_file_path
                 message=f"Training file: {training_file} or Testing file: {testing_file} is not present"
                 raise Exception(message)
-
+            
             return is_available
         
         except Exception as e:
@@ -69,7 +69,16 @@ class DataValidation:
     
     #function to drop unwanted columns
     def drop_unwanted_columns(self,df:pd.DataFrame)->pd.DataFrame:
+        '''
+        This function will drop the unnecessary columns in dataset
+
+        Params:
+        df: Accepts a pandas dataframe
+        =================================================
+        returns Pandas DataFrame
+        '''
         try:
+            logging.info("dropping unnecessary columns")
             #drop unnecessary columns as they are not required for model training
             columns_to_drop:list =  ['ID', 'Project Code', 'PQ #', 'PO / SO #', 'ASN/DN #','Item Description','PQ First Sent to Client Date',
             'PO Sent to Vendor Date','Scheduled Delivery Date','Delivered to Client Date','Delivery Recorded Date']
@@ -103,17 +112,23 @@ class DataValidation:
 
     def get_and_save_data_drift_report(self):
         try:
+            logging.info(f"reading base dataframe")
             base_df = pd.read_csv(self.data_validation_config.base_file_path)
+
+            logging.info(f"reading train and test dataframe")
             train_df,test_df = self.get_train_and_test_df()
 
+            logging.info(f"dropping unwanted columns from  base, train and test dataset")
             base_df = self.drop_unwanted_columns(df = base_df)
             train_df = self.drop_unwanted_columns(df = train_df)
             test_df = self.drop_unwanted_columns(df = test_df)
 
+            logging.info(f"creating data drift report for training dataset")
             train_profile = Profile(sections=[DataDriftProfileSection()])
             train_profile.calculate(base_df, train_df)
             train_report = json.loads(train_profile.json())
 
+            logging.info(f"creating data drift report for test dataset")
             test_profile = Profile(sections=[DataDriftProfileSection()])
             test_profile.calculate(base_df, test_df)
             test_report = json.loads(test_profile.json())
@@ -137,9 +152,11 @@ class DataValidation:
 
     def save_data_drift_report_page(self):
         try:
+            
             base_df = pd.read_csv(self.data_validation_config.base_file_path)
-            train_df,test_df = self.get_train_and_test_df()
 
+            train_df,test_df = self.get_train_and_test_df()
+            
             base_df = self.drop_unwanted_columns(df = base_df)
             train_df = self.drop_unwanted_columns(df = train_df)
             test_df = self.drop_unwanted_columns(df = test_df)
