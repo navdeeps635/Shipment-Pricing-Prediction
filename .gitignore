@@ -9,6 +9,7 @@ demotest.py
 logs
 saved_models
 artifacts
+prediction
 raw_data
 # Distribution / packaging
 .Python

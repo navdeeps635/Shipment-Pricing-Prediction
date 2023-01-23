@@ -12,7 +12,6 @@ input_transformer_object_file_name = "input_transformer.pkl"
 target_transformer_object_file_name = "target_transformer.pkl"
 model_file_name = "model.pkl"
 
-
 #create a training pipeline route to store information of subsequent steps in it.
 class TrainingPipelineConfig:
     
