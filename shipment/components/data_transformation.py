@@ -13,6 +13,7 @@ from sklearn.compose import ColumnTransformer,make_column_selector
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.tree import DecisionTreeRegressor,DecisionTreeClassifier
+from shipment.config import TARGET_COLUMN
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -32,7 +33,6 @@ class DataTransformation:
 
     def get_input_transformer_object(self,numerical_columns,categorical_columns)->ColumnTransformer:
         try:
-
             numerical_pipeline_steps = [
                 ('log_transformer',FunctionTransformer(func = np.log1p)),
                 ('feature_scaler',RobustScaler())
@@ -92,30 +92,39 @@ class DataTransformation:
 
             logging.info(f"splitting input features in  train and test dataset")            
             #get numerical and categorical features from train data
-            numerical_columns = train_df.select_dtypes(include = ['int64','float64']).columns
-            categorical_columns = train_df.select_dtypes(include = 'object').columns
+            num_cols = train_df.select_dtypes(include = ['int64','float64']).columns
 
-            numerical_imputer = NumericalImputationMICE(columns = numerical_columns)
+            numerical_imputer = NumericalImputationMICE(columns = num_cols)
 
             logging.info(f"imputing numerical features")
             #input features in train and test data
-            input_feature_train_df = numerical_imputer.fit_transform(train_df)
-            input_feature_test_df = numerical_imputer.transform(test_df)
+            train_df = numerical_imputer.fit_transform(train_df)
+            test_df = numerical_imputer.transform(test_df)
+
+            input_feature_train_df = train_df.drop(columns =[TARGET_COLUMN])
+            logging.info(input_feature_train_df)         
+            input_feature_test_df = test_df.drop(columns =[TARGET_COLUMN])
 
             logging.info(f"splitting target features in  train and test dataset")
             #target feature in train and test data 
-            target_feature_train_df = self.create_target_feature(df = input_feature_train_df)
-            target_feature_test_df = self.create_target_feature(df = input_feature_test_df)
+            target_feature_train_df = train_df[TARGET_COLUMN] 
+            target_feature_test_df = test_df[TARGET_COLUMN]
+
+            logging.info(f"splitting input features in  train and test dataset")            
+            #get numerical and categorical features from train data
+            train_num_cols = input_feature_train_df.select_dtypes(include = ['int64','float64']).columns
+            train_cat_cols = input_feature_train_df.select_dtypes(include = 'object').columns
 
             #creat an instance of input data transformer
             preprocessing_input_object = self.get_input_transformer_object(
-                numerical_columns = numerical_columns,
-                categorical_columns = categorical_columns
+                numerical_columns = train_num_cols,
+                categorical_columns = train_cat_cols
             )
 
             logging.info(f"Transforming input features in train and test dataset")
             #transformed train and test input feuatres array
             input_feature_train_arr = preprocessing_input_object.fit_transform(input_feature_train_df)
+            #print(input_feature_train_arr)
             input_feature_test_arr = preprocessing_input_object.transform(input_feature_test_df)  
             
             #print(input_feature_train_arr[:1])

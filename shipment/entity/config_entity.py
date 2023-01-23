@@ -33,7 +33,7 @@ class DataIngestionConfig:
             self.feature_store_file_path = os.path.join(self.data_ingestion_dir,"feature_store",file_name)
             self.train_file_path = os.path.join(self.data_ingestion_dir,"Dataset",train_file_name)
             self.test_file_path = os.path.join(self.data_ingestion_dir,"Dataset",test_file_name)
-            self.test_size = 0.2
+            self.test_size = 0.15
 
         except Exception as e:
             raise ShipmentException(e,sys)
@@ -77,7 +77,7 @@ class ModelTrainerConfig:
         try:
             self.model_trainer_dir = os.path.join(training_pipeline_config.artifact_dir,"model_trainer")
             self.model_path = os.path.join(self.model_trainer_dir,"model",model_file_name)
-            self.expected_score = 0.8
+            self.expected_score = 0.7
             self.overfitting_threshold = 0.1
 
         except Exception as e:

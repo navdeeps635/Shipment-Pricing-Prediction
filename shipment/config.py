@@ -14,3 +14,5 @@ env_variable = EnvironmentVariable()
 
 #create instance of MongoClient for connection
 mongo_client = pymongo.MongoClient(env_variable.mongodb_url)
+
+TARGET_COLUMN = "Freight Cost (USD)"

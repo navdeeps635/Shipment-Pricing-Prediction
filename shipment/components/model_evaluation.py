@@ -7,6 +7,7 @@ from shipment.components.data_transformation import DataTransformation,Numerical
 from sklearn.metrics import r2_score
 import os,sys
 import pandas as pd
+from shipment.config import TARGET_COLUMN
 
 class ModelEvaluation:
 
@@ -68,28 +69,28 @@ class ModelEvaluation:
 
             #get test dataset
             test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
-            input_df = self.data_transformer.drop_unwanted_columns(df = test_df)
-            input_df = self.data_transformer.clean_columns_data(df = input_df)
+            dropped_columns_test_df = self.data_transformer.drop_unwanted_columns(df = test_df)
+            clean_columns_test_df = self.data_transformer.clean_columns_data(df = dropped_columns_test_df)
 
             #r2_score using previously trained model
-            imputed_input_df = numerical_imputer.transform(input_df)
-            target_df = self.data_transformer.create_target_feature(df = imputed_input_df)
-            y_true = target_transformer.transform(target_df.values.reshape(-1,1))
+            imputed_test_df = numerical_imputer.transform(clean_columns_test_df)
+            target_df = imputed_test_df[TARGET_COLUMN]
+            y_true = target_transformer.transform(target_df)
 
             input_feature_name = list(input_transformer.feature_names_in_)
-            input_arr = input_transformer.transform(imputed_input_df[input_feature_name])
+            input_arr = input_transformer.transform(imputed_test_df[input_feature_name])
             y_pred  = model.predict(input_arr)
 
             previous_model_score = round(r2_score(y_true = y_true, y_pred = y_pred),4)
             logging.info(f"Score using previous model:{previous_model_score}")
 
             #r2_score using current trained model
-            current_imputed_input_df = current_numerical_imputer.transform(input_df)
-            target_df = self.data_transformer.create_target_feature(df = current_imputed_input_df)
-            y_true = current_target_transformer.transform(target_df.values.reshape(-1,1))
+            current_imputed_test_df = current_numerical_imputer.transform(clean_columns_test_df)
+            target_df = current_imputed_test_df[TARGET_COLUMN]
+            y_true = current_target_transformer.transform(target_df)
 
             input_feature_name = list(current_input_transformer.feature_names_in_)
-            input_arr = input_transformer.transform(imputed_input_df[input_feature_name])
+            input_arr = current_input_transformer.transform(current_imputed_test_df[input_feature_name])
             current_y_pred  = current_model.predict(input_arr)
 
             current_model_score = round(r2_score(y_true = y_true, y_pred = current_y_pred),4)

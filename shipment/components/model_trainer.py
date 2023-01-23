@@ -5,8 +5,10 @@ import os,sys
 import pandas as pd
 import numpy as np
 from shipment import utils
+from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.metrics import r2_score
+from catboost import CatBoostRegressor
 
 class ModelTrainer:
 
@@ -24,9 +26,26 @@ class ModelTrainer:
     
     def train_model(self,X,y):
         try:
-            xgb_reg = XGBRegressor(random_state=0)
-            xgb_reg.fit(X,y)
-            return xgb_reg
+            # xgb_reg = XGBRegressor(
+            #     objective = 'reg:squarederror',
+            #     max_depth = 8,
+            #     eta = 0.7,
+            #     random_state = 0
+            # )
+            # xgb_reg.fit(X,y)
+
+            # model_rf = RandomForestRegressor(
+            #     n_estimators = 80,
+            #     min_samples_leaf = 9,
+            #     max_depth = 16,
+            #     criterion = 'squared_error',
+            #     random_state = 0
+            # )
+            # model_rf.fit(X,y)
+
+            catboost_reg = CatBoostRegressor()
+            catboost_reg.fit(X,y)
+            return catboost_reg
 
         except Exception as e:
             raise ShipmentException(e, sys)
@@ -40,7 +59,7 @@ class ModelTrainer:
             logging.info(f"split input and target feature from train and test array")
             X_train, y_train = train_arr[:,:-1], train_arr[:,-1]
             X_test, y_test = test_arr[:,:-1], test_arr[:,-1]
-
+            
             logging.info(f"train the model")
             model = self.train_model(X = X_train,y = y_train)
 
