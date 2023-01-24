@@ -65,7 +65,6 @@ class DataTransformationConfig:
             self.data_transformation_dir = os.path.join(training_pipeline_config.artifact_dir,"data_transformation")
             self.tranformed_train_path = os.path.join(self.data_transformation_dir,"transformed_npfiles",train_file_name.replace(".csv",".npz"))
             self.tranformed_test_path = os.path.join(self.data_transformation_dir,"transformed_npfiles",test_file_name.replace(".csv",".npz"))
-            #self.numerical_imputer_object_path = os.path.join(self.data_transformation_dir,"numerial_imputer",numerial_imputer_object_file_name)
             self.input_transformer_object_path = os.path.join(self.data_transformation_dir,"input_transformer",input_transformer_object_file_name)
             self.target_transformer_object_path = os.path.join(self.data_transformation_dir,"target_transformer",target_transformer_object_file_name)
             

@@ -78,7 +78,6 @@ class DataValidation:
         returns Pandas DataFrame
         '''
         try:
-            logging.info("dropping unnecessary columns")
             #drop unnecessary columns as they are not required for model training
             columns_to_drop:list =  ['ID', 'Project Code', 'PQ #', 'PO / SO #', 'ASN/DN #','Item Description','PQ First Sent to Client Date',
             'PO Sent to Vendor Date','Scheduled Delivery Date','Delivered to Client Date','Delivery Recorded Date']
