@@ -21,11 +21,13 @@ class TrainingPipelineConfig:
         
         except Exception as e:
             raise ShipmentException(e,sys)
+
     
 class DataIngestionConfig:
 
     def __init__(self,training_pipeline_config:TrainingPipelineConfig):
         
+
         try:
             self.database_name = "project"
             self.collection_name = "shipment"
