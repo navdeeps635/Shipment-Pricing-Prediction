@@ -50,7 +50,7 @@ class DataValidationConfig:
             self.train_report_page_file_path = os.path.join(self.data_validation_dir,"Data Drift Dashboards","train_dashboard.html")
             self.test_report_page_file_path = os.path.join(self.data_validation_dir,"Data Drift Dashboards","test_dashboard.html")
             self.missing_threshold = 0.7
-            self.base_file_path = os.path.join("SCMS_Delivery_History.csv")
+            self.base_file_path = os.path.join("data/SCMS_Delivery_History.csv")
             
         except Exception as e:
             raise ShipmentException(e,sys)
