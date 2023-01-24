@@ -83,8 +83,8 @@ class ModelResolver:
             if latest_dir is None:
                 return Exception(f"Transformer is not available")
 
-            input_transformer_file_path = os.path.join(latest_dir,self.target_transformer_dir_name,config_entity.target_transformer_object_file_name)
-            return input_transformer_file_path 
+            target_transformer_file_path = os.path.join(latest_dir,self.target_transformer_dir_name,config_entity.target_transformer_object_file_name)
+            return target_transformer_file_path 
 
         except Exception as e:
             raise ShipmentException(e,sys)  

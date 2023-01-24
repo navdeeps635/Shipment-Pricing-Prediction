@@ -49,21 +49,18 @@ class ModelEvaluation:
             #Finding location of input transformer, target transformer and model
             logging.info(f"finding location of input transformer, target transformer and model")
             model_path = self.model_resolver.get_latest_model_path()
-            numerical_imputer_object_path = self.model_resolver.get_latest_numerical_imputer_path() 
             input_transformer_object_path = self.model_resolver.get_latest_input_transformer_path()
             target_transformer_object_path = self.model_resolver.get_latest_target_transformer_path()
 
             logging.info(f"Previous trained objects of transformer, model and target encoder")
             #load previously trained objects
             model = utils.load_object(file_path = model_path)
-            numerical_imputer = utils.load_object(file_path = numerical_imputer_object_path)
             input_transformer = utils.load_object(file_path = input_transformer_object_path)
             target_transformer = utils.load_object(file_path = target_transformer_object_path)
 
             logging.info(f"Currently trained model objects")
             #currently trained model objects
             current_model = utils.load_object(file_path = self.model_trainer_artifact.model_path)
-            current_numerical_imputer = utils.load_object(file_path = self.data_transformation_artifact.numerical_imputer_object_path)
             current_input_transformer = utils.load_object(file_path = self.data_transformation_artifact.input_transformer_object_path)
             current_target_transformer = utils.load_object(file_path = self.data_transformation_artifact.target_transformer_object_path)
 
@@ -72,25 +69,33 @@ class ModelEvaluation:
             dropped_columns_test_df = self.data_transformer.drop_unwanted_columns(df = test_df)
             clean_columns_test_df = self.data_transformer.clean_columns_data(df = dropped_columns_test_df)
 
+            #logging.info(f"Filling na with 9007 in target")
             #r2_score using previously trained model
-            imputed_test_df = numerical_imputer.transform(clean_columns_test_df)
-            target_df = imputed_test_df[TARGET_COLUMN]
-            y_true = target_transformer.transform(target_df)
+            target_df = clean_columns_test_df[TARGET_COLUMN].fillna(9007)
+            #logging.info(f"target df: {target_df}")
+            y_true = target_transformer.transform(target_df.values.reshape(-1,1))
+            #print(y_true)
 
+            logging.info(f"converting input features to array")
             input_feature_name = list(input_transformer.feature_names_in_)
-            input_arr = input_transformer.transform(imputed_test_df[input_feature_name])
+            #logging.info(f"input feature name: {input_feature_name}")
+            #logging.info(f"test_df: {clean_columns_test_df[input_feature_name]}")
+            input_arr = input_transformer.transform(clean_columns_test_df[input_feature_name])
+            
+            #logging.info(f"input_arr:{input_arr}")
             y_pred  = model.predict(input_arr)
 
+
+            logging.info("making prediction using previous model")
             previous_model_score = round(r2_score(y_true = y_true, y_pred = y_pred),4)
             logging.info(f"Score using previous model:{previous_model_score}")
 
             #r2_score using current trained model
-            current_imputed_test_df = current_numerical_imputer.transform(clean_columns_test_df)
-            target_df = current_imputed_test_df[TARGET_COLUMN]
-            y_true = current_target_transformer.transform(target_df)
+            target_df = clean_columns_test_df[TARGET_COLUMN].fillna(9007)
+            y_true = target_transformer.transform(target_df.values.reshape(-1,1))
 
             input_feature_name = list(current_input_transformer.feature_names_in_)
-            input_arr = current_input_transformer.transform(current_imputed_test_df[input_feature_name])
+            input_arr = current_input_transformer.transform(clean_columns_test_df[input_feature_name])
             current_y_pred  = current_model.predict(input_arr)
 
             current_model_score = round(r2_score(y_true = y_true, y_pred = current_y_pred),4)

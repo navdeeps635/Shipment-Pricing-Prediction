@@ -26,26 +26,22 @@ class ModelPusher:
         try:
             #load 
             logging.info(f"loading numerical imputer, input transformer, target transformer and model")
-            numerical_imputer_object = utils.load_object(file_path = self.data_transformation_artifact.numerical_imputer_object_path)
             input_transformer_object = utils.load_object(file_path = self.data_transformation_artifact.input_transformer_object_path)
             target_transformer_object = utils.load_object(file_path = self.data_transformation_artifact.target_transformer_object_path)
             model = utils.load_object(file_path = self.model_trainer_artifact.model_path)
 
             #model pusher dir
             logging.info(f"Saving model into model pusher directory")
-            utils.save_object(file_path = self.model_pusher_config.pusher_numerical_imputer_path,object = numerical_imputer_object)
             utils.save_object(file_path = self.model_pusher_config.pusher_input_transformer_path, object = input_transformer_object)
             utils.save_object(file_path = self.model_pusher_config.pusher_target_transformer_path, object = target_transformer_object)
             utils.save_object(file_path = self.model_pusher_config.pusher_model_path, object = model)
 
             #saved model dir
             logging.info(f"Saving model in saved model dir")
-            numerical_imputer_path = self.model_resolver.get_latest_save_numerical_imputer_path()
             input_transfomer_path = self.model_resolver.get_latest_save_input_transfomer_path()
             target_transfomer_path = self.model_resolver.get_latest_save_target_transfomer_path()
             model_path = self.model_resolver.get_latest_save_model_path()
 
-            utils.save_object(file_path = numerical_imputer_path, object = numerical_imputer_object)
             utils.save_object(file_path = input_transfomer_path, object = input_transformer_object)
             utils.save_object(file_path = target_transfomer_path, object = target_transformer_object)
             utils.save_object(file_path = model_path, object = model)

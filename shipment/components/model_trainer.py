@@ -5,10 +5,10 @@ import os,sys
 import pandas as pd
 import numpy as np
 from shipment import utils
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
+from sklearn.ensemble import RandomForestRegressor, VotingRegressor
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import r2_score
-from catboost import CatBoostRegressor
+from sklearn.model_selection import RandomizedSearchCV
 
 class ModelTrainer:
 
@@ -26,26 +26,22 @@ class ModelTrainer:
     
     def train_model(self,X,y):
         try:
-            # xgb_reg = XGBRegressor(
-            #     objective = 'reg:squarederror',
-            #     max_depth = 8,
-            #     eta = 0.7,
-            #     random_state = 0
-            # )
-            # xgb_reg.fit(X,y)
+            model_rf = RandomForestRegressor(
+                n_estimators = 80,
+                min_samples_leaf = 25,
+                max_depth = 25,
+                criterion = 'friedman_mse',
+                random_state = 0
+            )
 
-            # model_rf = RandomForestRegressor(
-            #     n_estimators = 80,
-            #     min_samples_leaf = 9,
-            #     max_depth = 16,
-            #     criterion = 'squared_error',
-            #     random_state = 0
-            # )
-            # model_rf.fit(X,y)
+            voting_reg = VotingRegressor([
+                ('knn',KNeighborsRegressor(n_neighbors = 10)),
+                ('rf',model_rf)
+            ])
 
-            catboost_reg = CatBoostRegressor()
-            catboost_reg.fit(X,y)
-            return catboost_reg
+            voting_reg.fit(X,y)
+
+            return voting_reg
 
         except Exception as e:
             raise ShipmentException(e, sys)
@@ -100,5 +96,3 @@ class ModelTrainer:
         
         except Exception as e:
             raise ShipmentException(e, sys)
-
-            

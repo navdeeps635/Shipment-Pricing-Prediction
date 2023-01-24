@@ -17,7 +17,7 @@ class DataValidationArtifact:
 class DataTransformationArtifact:
     tranformed_train_path:str
     tranformed_test_path:str
-    numerical_imputer_object_path:str
+    #numerical_imputer_object_path:str
     input_transformer_object_path:str
     target_transformer_object_path:str
 

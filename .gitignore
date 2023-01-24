@@ -9,6 +9,7 @@ demotest.py
 logs
 saved_models
 artifacts
+catboost_info
 prediction
 raw_data
 # Distribution / packaging

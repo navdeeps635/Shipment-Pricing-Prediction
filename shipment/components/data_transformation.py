@@ -34,6 +34,7 @@ class DataTransformation:
     def get_input_transformer_object(self,numerical_columns,categorical_columns)->ColumnTransformer:
         try:
             numerical_pipeline_steps = [
+                ('numerical_imputer',NumericalImputationMICE(columns = numerical_columns)),
                 ('log_transformer',FunctionTransformer(func = np.log1p)),
                 ('feature_scaler',RobustScaler())
             ]
@@ -90,25 +91,34 @@ class DataTransformation:
             train_df = self.clean_columns_data(df = train_df)
             test_df = self.clean_columns_data(df = test_df)
 
-            logging.info(f"splitting input features in  train and test dataset")            
-            #get numerical and categorical features from train data
-            num_cols = train_df.select_dtypes(include = ['int64','float64']).columns
+            target_df = pd.concat([train_df[TARGET_COLUMN],test_df[TARGET_COLUMN]])
+            target_df = target_df.reset_index(drop = True)
+            mean_value = target_df.mean()
+            print(mean_value)
+            target_df.fillna(mean_value,inplace = True)
 
-            numerical_imputer = NumericalImputationMICE(columns = num_cols)
-
-            logging.info(f"imputing numerical features")
-            #input features in train and test data
-            train_df = numerical_imputer.fit_transform(train_df)
-            test_df = numerical_imputer.transform(test_df)
+            # n_sample_points = target_df.isnull().sum()
+            # logging.info(f"no. of sample points:{n_sample_points}")
+            # random_sample = target_df.dropna().sample(n_sample_points,random_state=42)
+            # random_sample.index = target_df[target_df.isnull()].index
+            # target_df[target_df.isnull()] = random_sample
+            # logging.info(f"target_df shape after missing values imputation:{target_df}")
 
             input_feature_train_df = train_df.drop(columns =[TARGET_COLUMN])
-            logging.info(input_feature_train_df)         
+            #logging.info(input_feature_train_df)         
             input_feature_test_df = test_df.drop(columns =[TARGET_COLUMN])
 
             logging.info(f"splitting target features in  train and test dataset")
             #target feature in train and test data 
-            target_feature_train_df = train_df[TARGET_COLUMN] 
-            target_feature_test_df = test_df[TARGET_COLUMN]
+            #logging.info(f"train dataset index length {len(train_df.index)}")
+            #logging.info(f"test dataset index length {len(test_df.index)}")
+
+            target_feature_train_df = target_df[:train_df.shape[0]] 
+            target_feature_test_df = target_df[train_df.shape[0]:]
+            
+            #logging.info(f"target_feature_train_df shape {target_feature_train_df}")
+            #logging.info(f"target_feature_test_df shape {target_feature_test_df}")
+
 
             logging.info(f"splitting input features in  train and test dataset")            
             #get numerical and categorical features from train data
@@ -124,9 +134,13 @@ class DataTransformation:
             logging.info(f"Transforming input features in train and test dataset")
             #transformed train and test input feuatres array
             input_feature_train_arr = preprocessing_input_object.fit_transform(input_feature_train_df)
+            
             #print(input_feature_train_arr)
             input_feature_test_arr = preprocessing_input_object.transform(input_feature_test_df)  
             
+            logging.info(f"input_feature_train_arr shape:{input_feature_train_arr.shape}")
+            logging.info(f"input_feature_test_arr shape:{input_feature_test_arr.shape}")
+
             #print(input_feature_train_arr[:1])
             #creat an instance of target data transformer
             preprocessing_target_object = self.get_target_transformer_object()
@@ -136,10 +150,14 @@ class DataTransformation:
             target_feature_train_arr = preprocessing_target_object.fit_transform(target_feature_train_df.values.reshape(-1,1))
             target_feature_test_arr = preprocessing_target_object.transform(target_feature_test_df.values.reshape(-1,1))
 
+            logging.info(f"target_feature_train_arr shape:{target_feature_train_arr.shape}")
+            logging.info(f"target_feature_test_arr shape:{target_feature_test_arr.shape}")
+
             #print(target_feature_train_arr)
             logging.info(f"Concatenating transforming train and test array")
             #conacatenate transformred input feature array and target feature array
             train_arr = np.c_[input_feature_train_arr,target_feature_train_arr]
+            #logging.info(f"train_arr:{train_arr}")
             test_arr =  np.c_[input_feature_test_arr,target_feature_test_arr]
             
             logging.info(f"Saving transforming train and test array")
@@ -149,14 +167,14 @@ class DataTransformation:
 
             logging.info(f"Saving input and target transformer pkl file")
             #save transofrmed data into pkl file
-            utils.save_object(file_path = self.data_transformation_config.numerical_imputer_object_path, object = numerical_imputer)
+            #utils.save_object(file_path = self.data_transformation_config.numerical_imputer_object_path, object = numerical_imputer)
             utils.save_object(file_path = self.data_transformation_config.input_transformer_object_path, object = preprocessing_input_object)
             utils.save_object(file_path = self.data_transformation_config.target_transformer_object_path, object = preprocessing_target_object)
 
             data_transformation_artifact = artifact_entity.DataTransformationArtifact(
                 tranformed_train_path = self.data_transformation_config.tranformed_train_path,
                 tranformed_test_path = self.data_transformation_config.tranformed_test_path,
-                numerical_imputer_object_path = self.data_transformation_config.numerical_imputer_object_path,
+                #numerical_imputer_object_path = self.data_transformation_config.numerical_imputer_object_path,
                 input_transformer_object_path = self.data_transformation_config.input_transformer_object_path,
                 target_transformer_object_path = self.data_transformation_config.target_transformer_object_path
             )
@@ -200,17 +218,6 @@ class DataTransformation:
 
             return X
 
-        except Exception as e:
-                raise ShipmentException(e,sys)
-
-    #create target feature
-    def create_target_feature(self,df):
-        try:
-            new_df = df.copy()
-            new_df['Shipment Price'] = new_df['Line Item Value'] + new_df['Freight Cost (USD)'] + new_df['Line Item Insurance (USD)']
-
-            return new_df['Shipment Price']
-        
         except Exception as e:
                 raise ShipmentException(e,sys)
     

@@ -8,7 +8,6 @@ import pandas as pd
 import os, sys
 
 PREDICTION_DIR = "prediction"
-PREDICTION_FILE_NAME = f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
 
 def start_batch_prediction(input_file_path):
     try:
@@ -30,16 +29,13 @@ def start_batch_prediction(input_file_path):
         #print(input_df)
 
         logging.info(f"loading numerical imputer and input transformer to transformer dataset")
-        numerical_imputer = utils.load_object(file_path = model_resolver.get_latest_numerical_imputer_path())
         input_transformer = utils.load_object(file_path = model_resolver.get_latest_input_transformer_path())
         # print(numerical_imputer)
         # print(input_transformer)
         
         input_feature_names = list(input_transformer.feature_names_in_)
-        #print(input_feature_names)
-        imputed_df = numerical_imputer.transform(input_df)
-        #print(imputed_df)
-        input_arr = input_transformer.transform(imputed_df[input_feature_names])
+        print(input_feature_names)
+        input_arr = input_transformer.transform(input_df[input_feature_names])
         #print(input_arr)
         logging.info(f"loading model to make predictions")
         model = utils.load_object(file_path = model_resolver.get_latest_model_path())
@@ -47,15 +43,15 @@ def start_batch_prediction(input_file_path):
         prediction = model.predict(input_arr)
 
         #print(prediction.reshape(-1,1))
-        logging.info(f"loading target transformer to make predictions")
+        logging.info(f"loading target transformer to inverse transform target variable")
         target_transformer = utils.load_object(file_path = model_resolver.get_latest_target_transformer_path())
         final_prediction = target_transformer.inverse_transform(prediction.reshape(-1,1))
         #print(final_prediction)
 
         df["prediction "] = prediction
-        df["final_prediction"] = final_prediction
-        print(df)
-        prediction_file_name = os.path.basename(input_file_path).replace(".csv",f"{'_' + datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.csv")
+        df["final_prediction"] = np.expm1(final_prediction)
+        #print(df)
+        prediction_file_name = os.path.basename(f"{'Prediction file_' + datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.csv")
         prediction_file_path = os.path.join(PREDICTION_DIR,prediction_file_name)
         df.to_csv(prediction_file_path,index = False,header = True)
 

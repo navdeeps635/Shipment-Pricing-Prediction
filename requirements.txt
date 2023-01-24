@@ -20,5 +20,6 @@ websockets==10.3
 wincertstore==0.2
 xgboost==1.6.2
 evidently
+catboost
 PyYAML == 5.1
 -e .
