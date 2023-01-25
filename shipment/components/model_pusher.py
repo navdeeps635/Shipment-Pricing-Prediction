@@ -55,4 +55,4 @@ class ModelPusher:
             return model_pusher_artifact
 
         except Exception as e:
-            raise ShipmentException(e,sys)
+            raise ShipmentException(e,sys)  
